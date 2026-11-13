@@ -1,0 +1,25 @@
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
+
+exports.authHandler = (req,res,next) =>{
+    try {
+        
+        const token = req?.cookies?.token;
+
+        if(!token){
+            return res.status(401).json({
+                message:'Unauthorized.'
+            });
+        }
+
+        const decoded = jwt.verify(token,process.env.JWT);
+
+        req.user = decoded;
+
+        next();
+        
+
+    } catch (error) {
+        console.error(error + "error in authHandler middleware.");
+    }
+}
