@@ -1,3 +1,4 @@
+const applicationModel = require('../models/application.model');
 const jobModel = require('../models/job.model');
 
 require('dotenv').config();
@@ -138,6 +139,10 @@ exports.viewJobController = async (req,res) =>{
         
         const job = await jobModel.findById(id).populate('company_id');
 
+        const applicationCount = await applicationModel.countDocuments({
+            job_id:id
+        })
+
         if(!job){
             return res.status(404).json({
                 message:'job not found.'
@@ -146,13 +151,54 @@ exports.viewJobController = async (req,res) =>{
 
         res.status(200).json({
             message:'job displayed.',
-            job
+            job,
+            applicationCount
         })
 
     } catch (error) {
         console.error(error + 'viewJobController');
         res.status(500).json({
-            message:'internal server error in viewJobController'
+            message:'internal server error in viewJobController',
         })
     }
 }
+
+exports.searchJobController = async (req, res) => {
+    try {
+        const { title, city } = req.query;
+
+        const filter = {};
+
+        if (title || city) {
+            filter.$or = [];
+
+            if (title) {
+                filter.$or.push({
+                    title: { $regex: title, $options: 'i' }
+                });
+            }
+
+            if (city) {
+                filter.$or.push({
+                    city: { $regex: city, $options: 'i' }
+                });
+            }
+        }
+
+        const result = await jobModel.find(filter);
+
+        return res.status(200).json({
+            success: true,
+            count: result.length,
+            jobs: result
+        });
+
+    } catch (error) {
+        console.error('searchJobController:', error);
+
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+};

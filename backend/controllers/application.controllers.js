@@ -57,11 +57,19 @@ exports.updateApplicationStatusController = async (req,res)=>{
         
         const applicationId = req.params?.id;
 
-        const status = req.body.status;
+        const status = req.body?.status;
         
-        const checkApplication = await applicationModel.findById(applicationId);
+        const checkApplication = await applicationModel.findOne({job_id:applicationId});
 
-        if(status !== undefined) checkApplication.status = status ;
+        if(!checkApplication){
+            return res.status(400).json({
+                message:'undefined variables'
+            })
+        }
+
+        if(status !== undefined){
+            checkApplication.status = status ;
+        }
 
         await checkApplication.save();
 

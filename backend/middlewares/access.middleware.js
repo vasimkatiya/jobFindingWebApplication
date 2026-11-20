@@ -23,7 +23,7 @@ exports.companyAccessHandler = async (req,res,next) =>{
 
         if(recruiter.role == "user"){
             return res.status(400).json({
-                message:'user access this features.'
+                message:'user can not access this features.'
             });
         }
 
